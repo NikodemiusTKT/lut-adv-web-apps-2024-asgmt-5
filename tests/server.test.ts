@@ -1,31 +1,29 @@
+import { Todo, User } from "../models"; // Assuming you have defined Mongoose models for User and Todo
 import { app, server } from "../app";
-import express, { Request, Response } from "express";
-import {
-  initializeDataFile,
-  readDataFile,
-  writeDataFile,
-} from "../src/dataFileUtils";
 
-import fs from "fs";
-import path from "path";
+import mongoose from "mongoose";
 import request from "supertest";
 
-const testDataPath = "test_data.json";
+const mongoUri = "mongodb://localhost:27017/testdb";
 
-afterAll((done) => {
-  server.close(() => {
-    console.log("Server closed.");
-    done();
+beforeAll(async () => {
+  await mongoose.connect(mongoUri);
+});
+
+afterAll(async () => {
+  await mongoose.connection.dropDatabase();
+  await mongoose.connection.close();
+  await new Promise<void>((resolve) => {
+    server.close(() => {
+      console.log("Server closed.");
+      resolve();
+    });
   });
 });
 
 describe("POST /add", () => {
   beforeEach(async () => {
-    await fs.promises.writeFile(testDataPath, JSON.stringify([]));
-  });
-
-  afterEach(() => {
-    fs.unlinkSync(testDataPath);
+    await User.deleteMany({});
   });
 
   it("should add a new todo for a new user", async () => {
@@ -40,13 +38,12 @@ describe("POST /add", () => {
       data: ["Eat"],
     });
 
-    const data = await readDataFile(testDataPath);
-    // expect(data).toEqual([{ name: "Jukka", todos: ["Eat"] }]);
+    const user = await User.findOne({ name: "Jukka" });
+    expect(user.todos).toEqual(["Eat"]);
   });
 
   it("should add a new todo for an existing user", async () => {
-    const initialData = [{ name: "Jukka", todos: ["Eat"] }];
-    await writeDataFile(testDataPath, initialData);
+    await new User({ name: "Jukka", todos: ["Eat"] }).save();
 
     const response = await request(app)
       .post("/add")
@@ -59,12 +56,12 @@ describe("POST /add", () => {
       data: ["Eat", "Sleep"],
     });
 
-    const data = await readDataFile(testDataPath);
-    expect(data).toEqual([{ name: "Jukka", todos: ["Eat", "Sleep"] }]);
+    const user = await User.findOne({ name: "Jukka" });
+    expect(user.todos).toEqual(["Eat", "Sleep"]);
   });
 
   it("should handle multiple users", async () => {
-    await writeDataFile(testDataPath, [{ name: "Jukka", todos: ["Eat"] }]);
+    await new User({ name: "Jukka", todos: ["Eat"] }).save();
 
     const response1 = await request(app)
       .post("/add")
@@ -88,53 +85,21 @@ describe("POST /add", () => {
       data: ["Work"],
     });
 
-    const data = await readDataFile(testDataPath);
-    expect(data).toEqual([
+    const users = await User.find({});
+    expect(users).toEqual([
       { name: "Jukka", todos: ["Eat", "Sleep"] },
       { name: "Matti", todos: ["Work"] },
     ]);
   });
 });
 
-describe("initializeDataFile", () => {
-  const testFilePath = path.resolve(__dirname, "../../test_data.json");
-
-  afterEach(() => {
-    if (fs.existsSync(testFilePath)) {
-      fs.unlinkSync(testFilePath);
-    }
-  });
-
-  it("should create a new data file if it does not exist", async () => {
-    await initializeDataFile(testFilePath);
-
-    const data = JSON.parse(fs.readFileSync(testFilePath, "utf-8"));
-    expect(data).toEqual([]);
-  });
-
-  it("should not overwrite an existing data file", async () => {
-    const initialData = [{ name: "Jukka", todos: ["Eat"] }];
-    fs.writeFileSync(testFilePath, JSON.stringify(initialData));
-
-    await initializeDataFile(testFilePath);
-
-    const data = JSON.parse(fs.readFileSync(testFilePath, "utf-8"));
-    expect(data).toEqual(initialData);
-  });
-});
-
 describe("GET /todos/:name", () => {
   beforeEach(async () => {
-    await initializeDataFile(testDataPath);
-  });
-
-  afterEach(() => {
-    fs.unlinkSync(testDataPath);
+    await User.deleteMany({});
   });
 
   it("should return the todos for an existing user", async () => {
-    const initialData = [{ name: "Jukka", todos: ["Eat", "Sleep"] }];
-    await writeDataFile(testDataPath, initialData);
+    await new User({ name: "Jukka", todos: ["Eat", "Sleep"] }).save();
 
     const response = await request(app).get("/todos/Jukka");
 
@@ -156,16 +121,14 @@ describe("GET /todos/:name", () => {
     });
   });
 
-  it("should return 500 if there is an error reading the data file", async () => {
-    jest
-      .spyOn(fs.promises, "readFile")
-      .mockRejectedValueOnce(new Error("Read error"));
+  it("should return 500 if there is an error reading the data", async () => {
+    jest.spyOn(User, "findOne").mockRejectedValueOnce(new Error("Read error"));
 
     const response = await request(app).get("/todos/Jukka");
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
-      message: "Failed to read data file.",
+      message: "Failed to read data.",
       status: "error",
     });
   });
@@ -173,16 +136,11 @@ describe("GET /todos/:name", () => {
 
 describe("DELETE /delete", () => {
   beforeEach(async () => {
-    await initializeDataFile(testDataPath);
-  });
-
-  afterEach(() => {
-    fs.unlinkSync(testDataPath);
+    await User.deleteMany({});
   });
 
   it("should delete the user", async () => {
-    const initialData = [{ name: "Jukka", todos: ["Eat", "Sleep"] }];
-    await writeDataFile(testDataPath, initialData);
+    await new User({ name: "Jukka", todos: ["Eat", "Sleep"] }).save();
 
     const response = await request(app)
       .delete("/delete")
@@ -195,8 +153,8 @@ describe("DELETE /delete", () => {
       data: null,
     });
 
-    const data = await readDataFile(testDataPath);
-    expect(data).toEqual([]);
+    const user = await User.findOne({ name: "Jukka" });
+    expect(user).toBeNull();
   });
 
   it("should return 404 if the user is not found", async () => {
@@ -212,9 +170,9 @@ describe("DELETE /delete", () => {
     });
   });
 
-  it("should return 500 if there is an error reading the data file", async () => {
+  it("should return 500 if there is an error reading the data", async () => {
     jest
-      .spyOn(fs.promises, "readFile")
+      .spyOn(User, "findOneAndDelete")
       .mockRejectedValueOnce(new Error("Read error"));
 
     const response = await request(app)
@@ -224,16 +182,15 @@ describe("DELETE /delete", () => {
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
       data: null,
-      message: "Failed to read data file.",
+      message: "Failed to read data.",
       status: "error",
     });
   });
 
-  it("should return 500 if there is an error writing the data file", async () => {
-    const initialData = [{ name: "Jukka", todos: ["Eat", "Sleep"] }];
-    await writeDataFile(testDataPath, initialData);
+  it("should return 500 if there is an error writing the data", async () => {
+    await new User({ name: "Jukka", todos: ["Eat", "Sleep"] }).save();
     jest
-      .spyOn(fs.promises, "writeFile")
+      .spyOn(User, "findOneAndDelete")
       .mockRejectedValueOnce(new Error("Write error"));
 
     const response = await request(app)
@@ -243,7 +200,7 @@ describe("DELETE /delete", () => {
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
       status: "error",
-      message: "Failed to write data file.",
+      message: "Failed to write data.",
       data: null,
     });
   });
@@ -253,15 +210,14 @@ describe("PUT /update", () => {
   const mockUsers = [{ name: "John Doe", todos: ["Buy milk", "Walk the dog"] }];
 
   beforeEach(async () => {
-    await initializeDataFile(testDataPath);
-  });
-
-  afterEach(() => {
-    fs.unlinkSync(testDataPath);
+    await User.deleteMany({});
   });
 
   it("should delete a todo successfully", async () => {
-    await writeDataFile(testDataPath, mockUsers);
+    await new User({
+      name: "John Doe",
+      todos: ["Buy milk", "Walk the dog"],
+    }).save();
 
     const response = await request(app)
       .put("/update")
@@ -274,14 +230,12 @@ describe("PUT /update", () => {
       data: ["Walk the dog"],
     });
 
-    const data = await readDataFile(testDataPath);
-    expect(data).toEqual([{ name: "John Doe", todos: ["Walk the dog"] }]);
+    const user = await User.findOne({ name: "John Doe" });
+    expect(user.todos).toEqual(["Walk the dog"]);
   });
 
   it("should return an error if the todo is not found", async () => {
-    await writeDataFile(testDataPath, [
-      { name: "John Doe", todos: ["Walk the dog"] },
-    ]);
+    await new User({ name: "John Doe", todos: ["Walk the dog"] }).save();
 
     const response = await request(app)
       .put("/update")
@@ -295,9 +249,7 @@ describe("PUT /update", () => {
   });
 
   it("should return an error if the user is not found", async () => {
-    await writeDataFile(testDataPath, [
-      { name: "Jane Doe", todos: ["Buy milk"] },
-    ]);
+    await new User({ name: "Jane Doe", todos: ["Buy milk"] }).save();
 
     const response = await request(app)
       .put("/update")
