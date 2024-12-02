@@ -15,9 +15,6 @@ const init = () => {
     .getElementById("searchForm")
     .addEventListener("submit", handleSearchTodos);
   document
-    .getElementById("deleteUser")
-    .addEventListener("click", handleDeleteUser);
-  document
     .getElementById("search")
     .addEventListener("click", handleSearchTodos);
 };
@@ -52,10 +49,8 @@ const handleAddTodos = async (event) => {
     displaySuccessMessage(result.message);
     currentUser = userInput;
     renderTodos(result.data);
-    showCurrentUserSection(userInput);
   } else {
     handleError(result.message, displayErrorMsg);
-    hideCurrentUserSection();
   }
   clearInputFields(["todoInput"]);
 };
@@ -89,7 +84,7 @@ const handleDeleteUser = async () => {
   if (result.success) {
     displaySuccessMessage(result.message);
     document.getElementById("todoList").innerHTML = "";
-    hideCurrentUserSection();
+    currentUser = null;
   } else {
     handleError(result.message, displayErrorMsg);
   }
@@ -130,18 +125,11 @@ const fetchTodos = async (user) =>
     headers: { "Content-Type": "application/json" },
   });
 
-const deleteUser = async (user) =>
-  await apiRequest("/delete", {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: user }),
-  });
-
 const fetchAndDisplayTodos = async (user) => {
   const result = await fetchTodos(user);
   if (result.success) {
     renderTodos(result.data);
-    showCurrentUserSection(user);
+    currentUser = user;
   } else {
     handleError(result.message, displayErrorMsg);
     document.getElementById("todoList").innerHTML = "";
@@ -210,17 +198,6 @@ const displayMessage = (message, colorClass) => {
 
 const clearInputFields = (fieldIds) => {
   fieldIds.forEach((id) => (document.getElementById(id).value = ""));
-};
-
-const showCurrentUserSection = (user) => {
-  currentUser = user;
-  document.getElementById("currentUserElement").innerText = user;
-  document.getElementById("currentUserSection").hidden = false;
-};
-
-const hideCurrentUserSection = () => {
-  currentUser = "";
-  document.getElementById("currentUserSection").hidden = true;
 };
 
 const displayErrorMsg = (message) => displayMessage(message, "red lighten-4");
