@@ -248,7 +248,7 @@ describe("PUT /updateTodo", () => {
 
     const response = await request(app)
       .put("/updateTodo")
-      .send({ name: "John Doe", todo: { todo: "Buy milk", checked: true } });
+      .send({ name: "John Doe", todo: "Buy milk", checked: true });
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
@@ -279,7 +279,7 @@ describe("PUT /updateTodo", () => {
 
     const response = await request(app)
       .put("/updateTodo")
-      .send({ name: "John Doe", todo: { todo: "Buy milk", checked: true } });
+      .send({ name: "John Doe", todo: "Buy milk", checked: true });
 
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({
@@ -289,12 +289,11 @@ describe("PUT /updateTodo", () => {
   });
 
   it("should return an error if the user is not found", async () => {
-    const response = await request(app)
-      .put("/updateTodo")
-      .send({
-        name: "NonExistentUser",
-        todo: { todo: "Buy milk", checked: true },
-      });
+    const response = await request(app).put("/updateTodo").send({
+      name: "NonExistentUser",
+      todo: "Buy milk",
+      checked: true,
+    });
 
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject({

@@ -110,18 +110,18 @@ router.put(
   "/updateTodo",
   asyncHandler(async (req: Request, res: Response) => {
     const name = req.body.name;
-    const todo: ITodo = req.body.todo;
+    const todo = req.body.todo;
+    const checked = req.body.checked;
     if (!name || !todo) {
       throw new BadRequestError("Name and todo are required.");
     }
     const user = await User.findOne({ name: name });
     if (user) {
       const targetTodo: ITodo | undefined = user.todos.find(
-        (t) => t.todo === todo.todo
+        (t) => t.todo === todo
       );
       if (targetTodo) {
-        targetTodo.checked = todo.checked;
-        targetTodo.todo = todo.todo;
+        targetTodo.checked = checked;
         user.markModified("todos");
         await user.save();
         res.status(200).json({
