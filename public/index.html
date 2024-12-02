@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo List</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="index.css" />
+</head>
+
+<body>
+  <header>
+    <nav>
+      <div class="nav-wrapper blue">
+        <a href="#" class="brand-logo center">Todo List</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Current user and delete button section -->
+    <section id="currentUserSection" class="section" hidden>
+      <div class="row valign-wrapper center-align">
+        <div class="col s12">
+          <h5>Current User:
+            <span id="currentUserElement">Current User</span>
+          </h5>
+          <button id="deleteUser" class="btn red waves-effect waves-light">
+            Delete User
+            <i class="material-icons right">delete</i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Search todo section -->
+    <section>
+      <div class="row">
+        <div class="col s12">
+          <form id="searchForm">
+            <div class="row valign-wrapper">
+              <div class="input-field col s10">
+                <i class="material-icons prefix">search</i>
+                <input id="searchInput" type="text" />
+                <label for="searchInput">Search User Todos</label>
+              </div>
+              <div class="input-field col s2 right-align">
+                <button class="btn waves-effect waves-light" type="submit" id="search">
+                  Search
+                  <i class="material-icons right">search</i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Add todo section -->
+    <section>
+      <div class="row">
+        <div class="col s12">
+          <form id="todoForm">
+            <div class="row valign-wrapper">
+              <div class="input-field col s5">
+                <i class="material-icons prefix">account_circle</i>
+                <input id="userInput" type="text" class="validate" />
+                <label for="userInput">Your Name</label>
+              </div>
+              <div class="input-field col s5">
+                <i class="material-icons prefix">task_alt</i>
+                <input id="todoInput" type="text" class="validate" />
+                <label for="todoInput">Your Todo</label>
+              </div>
+              <div class="input-field col s2 right-align">
+                <button class="btn waves-effect waves-light" type="submit" id="submit-data">
+                  Add Todo
+                  <i class="material-icons right">add_task</i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    <section class="section"></section>
+    <div class="row">
+      <div class="col s12">
+        <div id="responseMessage" class="card-panel teal lighten-4 center-align" hidden>
+          <!-- Response message will be displayed here -->
+        </div>
+      </div>
+    </div>
+    </section>
+    <!-- Todo list section -->
+    <section class="section">
+      <div class="row">
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">Todos</span>
+              <ul id="todoList" class="collection">
+                <!-- Todo items will be appended here -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer blue">
+    <div class="container">
+      <div class="row">
+        <div class="col s12 center-align">© 2024 Copyright</div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>
