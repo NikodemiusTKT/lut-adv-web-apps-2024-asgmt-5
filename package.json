@@ -1,5 +1,5 @@
 {
-  "name": "lut-adv-web-apps-2024-week4-assignment",
+  "name": "lut-adv-web-apps-2024-week5-assignment",
   "version": "1.0.0",
   "main": "server.ts",
   "scripts": {
@@ -7,9 +7,9 @@
     "build": "tsc",
     "start": "tsc-watch --onSuccess \"nodemon dist/app.js\""
   },
-  "author": "",
+  "author": "Teemu Tanninen",
   "license": "MIT",
-  "description": "",
+  "description": "The 5th weekly assignment for the LUT Universtiy Advanced Web Applications 2024 course.\"",
   "dependencies": {
     "express": "^4.21.0",
     "morgan": "^1.10.0",
@@ -28,5 +28,24 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NikodemiusTKT/lut-adv-web-apps-2024-asgmt-5.git"
+  },
+  "keywords": [
+    "LUT",
+    "assignment",
+    "web-apps",
+    "web",
+    "university",
+    "coursework"
+  ],
+  "bugs": {
+    "url": "https://github.com/NikodemiusTKT/lut-adv-web-apps-2024-asgmt-5/issues"
+  },
+  "homepage": "https://github.com/NikodemiusTKT/lut-adv-web-apps-2024-asgmt-5#readme"
 }
