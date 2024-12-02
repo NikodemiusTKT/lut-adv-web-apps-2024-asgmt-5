@@ -1,4 +1,3 @@
-import { dataFilePath, initializeDataFile } from "./src/dataFileUtils";
 import express, { Express, Router } from "express";
 
 import { errorHandler } from "./src/errors";
@@ -21,7 +20,7 @@ app.use(errorHandler);
 let server: any;
 
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/mydatabase";
+  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/testdb";
 
 const connectToDatabase = async () => {
   try {
