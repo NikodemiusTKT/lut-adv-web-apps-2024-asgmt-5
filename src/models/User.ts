@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 interface ITodo {
   todo: string;
-  checked: boolean;
+  checked?: boolean;
 }
 
 interface IUser extends Document {
@@ -18,6 +18,7 @@ const TodoSchema = new Schema<ITodo>({
 const UserSchema = new Schema<IUser>({
   name: { type: String, required: true },
   todos: [TodoSchema],
+  default: [],
 });
 
 const User = mongoose.model<IUser>("User", UserSchema);

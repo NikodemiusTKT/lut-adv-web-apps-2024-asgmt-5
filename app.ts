@@ -23,13 +23,10 @@ let server: any;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/mydatabase";
 
-(async () => {
+const connectToDatabase = async () => {
   try {
     await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB successfully.");
-    server = app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Failed to connect to MongoDB: ${error.message}`);
@@ -38,6 +35,21 @@ const MONGODB_URI =
     }
     process.exit(1);
   }
-})();
+};
 
-export { app, server };
+const startServer = () => {
+  server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+const stopServer = async () => {
+  if (server) {
+    server.close(() => {
+      console.log("Server closed.");
+    });
+  }
+  await mongoose.connection.close();
+};
+
+export { app, connectToDatabase, startServer, stopServer };

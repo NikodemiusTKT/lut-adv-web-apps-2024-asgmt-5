@@ -1,9 +1,9 @@
 import { BadRequestError, UserNotFoundError } from "./errors";
 import { ITodo, IUser, User } from "./models/User";
 import { NextFunction, Request, Response, Router } from "express";
-import { dataFilePath, readDataFile, writeDataFile } from "./dataFileUtils";
 
 let router = Router();
+let users: TUser[] = [];
 
 type TUser = {
   name: string;
@@ -19,36 +19,38 @@ function asyncHandler<P>(
 
 router.get(
   "/todos/:name",
-  asyncHandler(async (req: Request, res: Response) => {
-    const { name } = req.params;
-    const user: IUser | null = await User.findOne({ name: name });
-    if (user) {
-      res.json({
-        status: "success",
-        message: "Todos successfully fetched for user.",
-        data: user.todos,
-      });
-    } else {
-      throw new UserNotFoundError();
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { name } = req.params;
+      const user = await User.findOne({ name: name });
+      if (user) {
+        res.json({
+          status: "success",
+          message: "Todos successfully fetched for user.",
+          data: user.todos,
+        });
+      } else {
+        throw new UserNotFoundError();
+      }
+    } catch (error) {
+      next(error);
     }
   })
 );
 router.post(
   "/add",
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, todo }: { name: string; todo: string } = req.body;
+    const { name, todo }: { name: IUser; todo: ITodo } = req.body;
     if (!name || !todo) {
       throw new BadRequestError("Name and todo are required.");
     }
-    const users: TUser[] = await readDataFile(dataFilePath);
-    let user: TUser | undefined = users.find((user) => user.name === name);
+    let user = await User.findOne({ name: name });
     if (user) {
       user.todos.push(todo);
     } else {
-      user = { name: name, todos: [todo] };
-      users.push(user);
+      user = new User({ name: name, todos: [todo] });
     }
-    await writeDataFile(dataFilePath, users);
+    await user.save();
     res.json({
       status: "success",
       message: `Todo added successfully for user ${name}.`,
@@ -65,11 +67,8 @@ router.delete(
       throw new BadRequestError("Name is required.");
     }
     const decodedName = decodeURIComponent(name);
-    let users: TUser[] = await readDataFile(dataFilePath);
-    const userIndex = users.findIndex((user) => user.name === decodedName);
-    if (userIndex !== -1) {
-      users.splice(userIndex, 1);
-      await writeDataFile(dataFilePath, users);
+    const user = await User.findOneAndDelete({ name: decodedName });
+    if (user) {
       res.status(200).json({
         message: "User deleted successfully.",
         status: "success",
@@ -90,13 +89,12 @@ router.put(
     }
     const decodedName = decodeURIComponent(name);
     const decodedTodo = decodeURIComponent(todo);
-    const users: TUser[] = await readDataFile(dataFilePath);
-    const user = users.find((user) => user.name === decodedName);
+    const user = await User.findOne({ name: decodedName });
     if (user) {
-      const todoIndex = user.todos.indexOf(decodedTodo);
+      const todoIndex = user.todos.findIndex((t) => t.todo === decodedTodo);
       if (todoIndex !== -1) {
         user.todos.splice(todoIndex, 1);
-        await writeDataFile(dataFilePath, users);
+        await user.save();
         res.status(200).json({
           message: "Todo deleted successfully.",
           status: "success",
