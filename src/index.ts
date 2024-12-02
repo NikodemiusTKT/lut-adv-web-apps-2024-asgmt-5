@@ -76,8 +76,38 @@ router.delete(
   })
 );
 
+// Delete a todo
 router.put(
   "/update",
+  asyncHandler(async (req: Request, res: Response) => {
+    const name = req.body.name;
+    const todo = req.body.todo;
+    if (!name || !todo) {
+      throw new BadRequestError("Name and todo are required.");
+    }
+    const user = await User.findOne({ name: name });
+    if (user) {
+      const todoIndex = user.todos.findIndex((t) => t.todo === todo.todo);
+      if (todoIndex !== -1) {
+        user.todos.splice(todoIndex, 1);
+        await user.save();
+        res.status(200).json({
+          message: "Todo deleted successfully.",
+          status: "success",
+          data: user.todos,
+        });
+      } else {
+        throw new BadRequestError("Todo not found.");
+      }
+    } else {
+      throw new UserNotFoundError();
+    }
+  })
+);
+
+// Update a todo
+router.put(
+  "/updateTodo",
   asyncHandler(async (req: Request, res: Response) => {
     const name = req.body.name;
     const todo: ITodo = req.body.todo;
@@ -86,12 +116,16 @@ router.put(
     }
     const user = await User.findOne({ name: name });
     if (user) {
-      const todoIndex = user.todos.findIndex((t) => t.todo === todo.todo);
-      if (todoIndex) {
-        user.todos.splice(todoIndex, 1);
+      const targetTodo: ITodo | undefined = user.todos.find(
+        (t) => t.todo === todo.todo
+      );
+      if (targetTodo) {
+        targetTodo.checked = todo.checked;
+        targetTodo.todo = todo.todo;
+        user.markModified("todos");
         await user.save();
         res.status(200).json({
-          message: "Todo deleted successfully.",
+          message: "Todo updated successfully.",
           status: "success",
           data: user.todos,
         });

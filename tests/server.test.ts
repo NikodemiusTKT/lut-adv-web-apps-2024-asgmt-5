@@ -203,7 +203,7 @@ describe("PUT /update", () => {
   it("should return an error if the todo is not found", async () => {
     await getCollection("users").insertOne({
       name: "John Doe",
-      todos: [{ task: "Walk the dog", checked: false }],
+      todos: [{ todo: "Walk the dog", checked: false }],
     });
 
     const response = await request(app)
@@ -223,6 +223,77 @@ describe("PUT /update", () => {
       .send({
         name: "NonExistentUser",
         todo: { task: "Buy milk", checked: false },
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({
+      status: "error",
+      message: "User not found.",
+    });
+  });
+});
+describe("PUT /updateTodo", () => {
+  beforeEach(async () => {
+    await getCollection("users").deleteMany({});
+  });
+
+  it("should update a todo successfully", async () => {
+    await getCollection("users").insertOne({
+      name: "John Doe",
+      todos: [
+        { todo: "Buy milk", checked: false },
+        { todo: "Walk the dog", checked: false },
+      ],
+    });
+
+    const response = await request(app)
+      .put("/updateTodo")
+      .send({ name: "John Doe", todo: { todo: "Buy milk", checked: true } });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      status: "success",
+      message: "Todo updated successfully.",
+      data: [
+        { todo: "Buy milk", checked: true },
+        { todo: "Walk the dog", checked: false },
+      ],
+    });
+
+    const user = await getCollection("users").findOne({ name: "John Doe" });
+    if (user) {
+      expect(user.todos).toMatchObject([
+        { todo: "Buy milk", checked: true },
+        { todo: "Walk the dog", checked: false },
+      ]);
+    } else {
+      throw new Error("User not found");
+    }
+  });
+
+  it("should return an error if the todo is not found", async () => {
+    await getCollection("users").insertOne({
+      name: "John Doe",
+      todos: [{ todo: "Walk the dog", checked: false }],
+    });
+
+    const response = await request(app)
+      .put("/updateTodo")
+      .send({ name: "John Doe", todo: { todo: "Buy milk", checked: true } });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      status: "error",
+      message: "Todo not found.",
+    });
+  });
+
+  it("should return an error if the user is not found", async () => {
+    const response = await request(app)
+      .put("/updateTodo")
+      .send({
+        name: "NonExistentUser",
+        todo: { todo: "Buy milk", checked: true },
       });
 
     expect(response.status).toBe(404);
