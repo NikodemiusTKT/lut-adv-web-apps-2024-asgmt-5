@@ -1,8 +1,7 @@
 import { BadRequestError, UserNotFoundError } from "./errors";
+import { ITodo, IUser, User } from "./models/User";
 import { NextFunction, Request, Response, Router } from "express";
 import { dataFilePath, readDataFile, writeDataFile } from "./dataFileUtils";
-
-import path from "path";
 
 let router = Router();
 
@@ -10,21 +9,6 @@ type TUser = {
   name: string;
   todos: string[];
 };
-
-type AddTodoRequest = {
-  name: string;
-  todo: string;
-};
-
-interface DeleteUserRequest {
-  name: string;
-}
-
-interface UpdateTodoRequest {
-  name: string;
-  todo: string;
-}
-
 function asyncHandler<P>(
   fn: (req: Request<P>, res: Response, next: NextFunction) => Promise<void>
 ): (req: Request<P>, res: Response, next: NextFunction) => void {
@@ -37,9 +21,7 @@ router.get(
   "/todos/:name",
   asyncHandler(async (req: Request, res: Response) => {
     const { name } = req.params;
-    const users: TUser[] = await readDataFile(dataFilePath);
-    console.log(users);
-    const user = users.find((user) => user.name === name);
+    const user: IUser | null = await User.findOne({ name });
     if (user) {
       res.json({
         status: "success",
