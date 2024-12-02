@@ -21,7 +21,7 @@ router.get(
   "/todos/:name",
   asyncHandler(async (req: Request, res: Response) => {
     const { name } = req.params;
-    const user: IUser | null = await User.findOne({ name });
+    const user: IUser | null = await User.findOne({ name: name });
     if (user) {
       res.json({
         status: "success",

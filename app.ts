@@ -2,6 +2,7 @@ import { dataFilePath, initializeDataFile } from "./src/dataFileUtils";
 import express, { Express, Router } from "express";
 
 import { errorHandler } from "./src/errors";
+import mongoose from "mongoose";
 import morgan from "morgan";
 import path from "path";
 import router from "./src/index";
@@ -19,18 +20,21 @@ app.use(errorHandler);
 
 let server: any;
 
+const MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/mydatabase";
+
 (async () => {
   try {
-    await initializeDataFile(dataFilePath);
-    console.log("Data file initialized successfully.");
+    await mongoose.connect(MONGODB_URI);
+    console.log("Connected to MongoDB successfully.");
     server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`Failed to initialize data file: ${error.message}`);
+      console.error(`Failed to connect to MongoDB: ${error.message}`);
     } else {
-      console.error("Failed to initialize data file: Unknown error");
+      console.error("Failed to connect to MongoDB: Unknown error");
     }
     process.exit(1);
   }
