@@ -87,7 +87,7 @@ router.put(
     }
     const user = await User.findOne({ name: name });
     if (user) {
-      const todoIndex = user.todos.findIndex((t) => t.todo === todo.todo);
+      const todoIndex = user.todos.findIndex((t) => t.todo === todo);
       if (todoIndex !== -1) {
         user.todos.splice(todoIndex, 1);
         await user.save();

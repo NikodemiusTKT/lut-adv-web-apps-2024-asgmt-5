@@ -181,7 +181,7 @@ describe("PUT /update", () => {
 
     const response = await request(app)
       .put("/update")
-      .send({ name: "John Doe", todo: { todo: "Buy milk", checked: false } });
+      .send({ name: "John Doe", todo: "Buy milk" });
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
@@ -208,7 +208,7 @@ describe("PUT /update", () => {
 
     const response = await request(app)
       .put("/update")
-      .send({ name: "John Doe", todo: { todo: "Buy milk", checked: false } });
+      .send({ name: "John Doe", todo: "Buy milk" });
 
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({

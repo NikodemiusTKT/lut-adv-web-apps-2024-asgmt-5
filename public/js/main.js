@@ -139,7 +139,7 @@ const handleDeleteTodo = async (event) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: currentUser,
-      todo: { todo: todo, checked: checked, _id: id },
+      todo: todo,
     }),
   });
 
