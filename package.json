@@ -12,14 +12,14 @@
   "description": "The 5th weekly assignment for the LUT Universtiy Advanced Web Applications 2024 course.\"",
   "dependencies": {
     "express": "^4.21.0",
+    "mongoose": "^8.8.3",
     "morgan": "^1.10.0",
     "path": "^0.12.7"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/morgan": "^1.9.9",
-    "tsc-watch": "^6.2.0",
     "@types/jest": "^29.5.14",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^22.9.0",
     "@types/supertest": "^6.0.2",
     "jest": "^29.7.0",
@@ -27,6 +27,7 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
+    "tsc-watch": "^6.2.0",
     "typescript": "^5.6.3"
   },
   "directories": {
