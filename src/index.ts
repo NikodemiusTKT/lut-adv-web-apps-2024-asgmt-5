@@ -3,11 +3,10 @@ import { ITodo, IUser, User } from "./models/User";
 import { NextFunction, Request, Response, Router } from "express";
 
 let router = Router();
-let users: TUser[] = [];
 
 type TUser = {
   name: string;
-  todos: string[];
+  todos: ITodo[];
 };
 function asyncHandler<P>(
   fn: (req: Request<P>, res: Response, next: NextFunction) => Promise<void>
@@ -19,28 +18,24 @@ function asyncHandler<P>(
 
 router.get(
   "/todos/:name",
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { name } = req.params;
-      const user = await User.findOne({ name: name });
-      if (user) {
-        res.json({
-          status: "success",
-          message: "Todos successfully fetched for user.",
-          data: user.todos,
-        });
-      } else {
-        throw new UserNotFoundError();
-      }
-    } catch (error) {
-      next(error);
+  asyncHandler(async (req: Request, res: Response) => {
+    const { name } = req.params;
+    const user = await User.findOne({ name: name });
+    if (user) {
+      res.json({
+        status: "success",
+        message: "Todos successfully fetched for user.",
+        data: user.todos,
+      });
+    } else {
+      throw new UserNotFoundError();
     }
   })
 );
 router.post(
   "/add",
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, todo }: { name: IUser; todo: ITodo } = req.body;
+    const { name, todo } = req.body;
     if (!name || !todo) {
       throw new BadRequestError("Name and todo are required.");
     }
@@ -83,15 +78,13 @@ router.delete(
 router.put(
   "/update",
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, todo }: { name: string; todo: string } = req.body;
+    const { name, todo }: { name: IUser; todo: ITodo } = req.body;
     if (!name || !todo) {
       throw new BadRequestError("Name and todo are required.");
     }
-    const decodedName = decodeURIComponent(name);
-    const decodedTodo = decodeURIComponent(todo);
-    const user = await User.findOne({ name: decodedName });
+    const user = await User.findOne({ name: name });
     if (user) {
-      const todoIndex = user.todos.findIndex((t) => t.todo === decodedTodo);
+      const todoIndex = user.todos.findIndex((t) => t.todo === todo.todo);
       if (todoIndex !== -1) {
         user.todos.splice(todoIndex, 1);
         await user.save();

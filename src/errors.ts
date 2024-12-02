@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 class UserNotFoundError extends Error {
-  constructor(message: string = "User not found") {
+  constructor(message: string = "User not found.") {
     super(message);
     this.name = "UserNotFoundError";
   }

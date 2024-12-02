@@ -18,7 +18,6 @@ const TodoSchema = new Schema<ITodo>({
 const UserSchema = new Schema<IUser>({
   name: { type: String, required: true },
   todos: [TodoSchema],
-  default: [],
 });
 
 const User = mongoose.model<IUser>("User", UserSchema);
