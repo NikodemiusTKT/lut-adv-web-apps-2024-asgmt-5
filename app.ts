@@ -52,4 +52,9 @@ const stopServer = async () => {
   await mongoose.connection.close();
 };
 
+if (process.env.NODE_ENV !== "test") {
+  connectToDatabase();
+  startServer();
+}
+
 export { app, connectToDatabase, startServer, stopServer };

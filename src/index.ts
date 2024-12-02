@@ -1,6 +1,7 @@
 import { BadRequestError, UserNotFoundError } from "./errors";
 import { ITodo, IUser, User } from "./models/User";
 import { NextFunction, Request, Response, Router } from "express";
+import mongoose, { Types } from "mongoose";
 
 let router = Router();
 
@@ -78,14 +79,15 @@ router.delete(
 router.put(
   "/update",
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, todo }: { name: IUser; todo: ITodo } = req.body;
+    const name = req.body.name;
+    const todo: ITodo = req.body.todo;
     if (!name || !todo) {
       throw new BadRequestError("Name and todo are required.");
     }
     const user = await User.findOne({ name: name });
     if (user) {
       const todoIndex = user.todos.findIndex((t) => t.todo === todo.todo);
-      if (todoIndex !== -1) {
+      if (todoIndex) {
         user.todos.splice(todoIndex, 1);
         await user.save();
         res.status(200).json({

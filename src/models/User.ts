@@ -1,6 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 interface ITodo {
+  _id: Types.ObjectId;
   todo: string;
   checked?: boolean;
 }
@@ -11,6 +12,7 @@ interface IUser extends Document {
 }
 
 const TodoSchema = new Schema<ITodo>({
+  _id: { type: Schema.Types.ObjectId, auto: true },
   todo: { type: String, required: true },
   checked: { type: Boolean, default: false },
 });

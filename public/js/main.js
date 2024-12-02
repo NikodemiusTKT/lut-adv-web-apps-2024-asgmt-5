@@ -101,7 +101,7 @@ const addTodo = (user, todo) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: user,
-      todo: todo,
+      todo: { todo: todo, checked: false },
     }),
   });
 
@@ -132,13 +132,14 @@ const fetchAndDisplayTodos = async (user) => {
 };
 
 const handleDeleteTodo = async (event) => {
-  const { index, todo } = event.target.dataset;
+  const { index, todo, id, checked } = event.target.dataset;
+  console.table({ todo, id, checked });
   const result = await apiRequest("/update", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: currentUser,
-      todo: todo,
+      todo: { todo: todo, checked: checked, _id: id },
     }),
   });
 
@@ -154,7 +155,7 @@ const renderTodoItem = (todo, index) => {
   const todoList = document.getElementById("todoList");
   const newTodoItem = document.createElement("li");
   newTodoItem.className = "collection-item";
-  newTodoItem.innerHTML = `${todo} <a href="#!" class="secondary-content link"><i class="material-icons delete-task" data-index="${index}" data-todo="${todo}">delete</i></a>`;
+  newTodoItem.innerHTML = `${todo.todo} <a href="#!" class="secondary-content link"><i class="material-icons delete-task" data-index="${index}" data-todo="${todo.todo}" data-id="${todo._id}" data-checked="${todo.checked}">delete</i></a>`;
   newTodoItem.addEventListener("click", handleDeleteTodo);
   todoList.appendChild(newTodoItem);
 };
