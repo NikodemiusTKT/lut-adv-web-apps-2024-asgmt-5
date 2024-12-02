@@ -95,6 +95,25 @@ const handleDeleteUser = async () => {
   }
 };
 
+const handleUpdateTodo = async (event, todo) => {
+  const checked = event.target.checked;
+  const result = await apiRequest("/updateTodo", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: currentUser,
+      todo: todo.todo,
+      checked: checked,
+    }),
+  });
+  if (result.success) {
+    displaySuccessMessage(result.message);
+    renderTodos(result.data);
+  } else {
+    handleError(result.message, displayErrorMsg);
+  }
+};
+
 const addTodo = (user, todo) =>
   apiRequest("/add", {
     method: "POST",
@@ -131,15 +150,14 @@ const fetchAndDisplayTodos = async (user) => {
   return result;
 };
 
-const handleDeleteTodo = async (event) => {
-  const { index, todo, id, checked } = event.target.dataset;
-  console.table({ todo, id, checked });
+const handleDeleteTodo = async (event, todo) => {
+  event.preventDefault();
   const result = await apiRequest("/update", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: currentUser,
-      todo: todo,
+      todo: todo.todo,
     }),
   });
 
@@ -154,9 +172,26 @@ const handleDeleteTodo = async (event) => {
 const renderTodoItem = (todo, index) => {
   const todoList = document.getElementById("todoList");
   const newTodoItem = document.createElement("li");
-  newTodoItem.className = "collection-item";
-  newTodoItem.innerHTML = `${todo.todo} <a href="#!" class="secondary-content link"><i class="material-icons delete-task" data-index="${index}" data-todo="${todo.todo}" data-id="${todo._id}" data-checked="${todo.checked}">delete</i></a>`;
-  newTodoItem.addEventListener("click", handleDeleteTodo);
+  const label = document.createElement("label");
+  const checkBox = document.createElement("input");
+  const span = document.createElement("span");
+  const deleteLink = document.createElement("a");
+  checkBox.type = "checkbox";
+  checkBox.checked = todo.checked;
+  checkBox.className = "checkBoxes";
+  checkBox.id = "myCheckbox";
+  deleteLink.addEventListener("click", (event) =>
+    handleDeleteTodo(event, todo)
+  );
+  checkBox.addEventListener("change", (event) => handleUpdateTodo(event, todo));
+  deleteLink.innerText = todo.todo;
+  deleteLink.className = "delete-task";
+  deleteLink.dataset.index = index;
+  deleteLink.dataset.todo = todo.todo;
+  span.appendChild(deleteLink);
+  label.appendChild(checkBox);
+  label.appendChild(span);
+  newTodoItem.appendChild(label);
   todoList.appendChild(newTodoItem);
 };
 
